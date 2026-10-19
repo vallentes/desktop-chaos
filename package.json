@@ -1,0 +1,40 @@
+{
+  "name": "desktop-chaos",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:rust": "cargo test --workspace",
+    "icons": "vite-node scripts/make-icon.ts && tauri icon src-tauri/app-icon.png",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@dimforge/rapier2d-compat": "0.14.0",
+    "@fontsource/inter": "5.2.5",
+    "@fontsource/jetbrains-mono": "5.2.5",
+    "@fontsource/rajdhani": "5.2.5",
+    "@tauri-apps/api": "2.12.4",
+    "pixi.js": "8.13.2",
+    "qrcode": "1.5.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "0.1.80",
+    "@tauri-apps/cli": "2.12.3",
+    "@types/node": "22.15.3",
+    "@types/qrcode": "1.5.5",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "jsqr": "1.4.0",
+    "typescript": "5.6.3",
+    "vite": "5.4.11",
+    "vite-node": "2.1.8",
+    "vitest": "2.1.8"
+  },
+  "license": "UNLICENSED"
+}

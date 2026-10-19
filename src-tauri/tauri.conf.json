@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Desktop Chaos",
+  "version": "1.0.0",
+  "identifier": "app.desktopchaos.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1430",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Desktop Chaos",
+        "url": "index.html",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 900,
+        "minHeight": 600,
+        "visible": false,
+        "center": true,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "app", "dmg"],
+    "publisher": "Valentin Vina",
+    "copyright": "Copyright (c) 2026 Valentin Vina. All rights reserved.",
+    "category": "Entertainment",
+    "shortDescription": "Destroy your desktop. Not your computer.",
+    "longDescription": "Desktop Chaos draws simulated destruction on a transparent overlay above your desktop: cracks, bullet holes, fire, meteors, a black hole and more. It also includes floating system-monitor widgets. Nothing on your computer is ever touched.",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com",
+      "certificateThumbprint": null,
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "displayLanguageSelector": false
+      },
+      "wix": { "language": "en-US" }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "hardenedRuntime": true,
+      "signingIdentity": null,
+      "entitlements": "entitlements.plist",
+      "dmg": {
+        "windowSize": { "width": 600, "height": 380 },
+        "appPosition": { "x": 160, "y": 190 },
+        "applicationFolderPosition": { "x": 440, "y": 190 }
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERFODA1Nzg4RTQ0MTlDM0YKUldRL25FSGtpRmVBM3FwYUduU2VnL1JXb1QzdU9GTjF1c0JNbSt1Yk10Q1ppVkZPbWRNZmYyUEMK",
+      "endpoints": ["https://github.com/vallentes/desktop-chaos/releases/latest/download/latest.json"],
+      "windows": { "installMode": "passive" }
+    }
+  }
+}

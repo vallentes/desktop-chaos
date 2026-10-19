@@ -1,0 +1,55 @@
+[package]
+name = "desktop-chaos"
+version = "1.0.0"
+description = "Desktop Chaos"
+edition = "2021"
+publish = false
+license-file = "../LICENSE"
+
+[lib]
+name = "desktop_chaos_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png", "macos-private-api"] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-log = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-dialog = "2"
+axum = { version = "0.7", features = ["ws"] }
+futures-util = "0.3"
+getrandom = "0.2"
+log = "0.4"
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sysinfo = "0.37"
+starship-battery = "0.10"
+netdev = "0.36"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+
+[target.'cfg(windows)'.dependencies]
+wmi = "0.17"
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_System_Performance",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_Networking_WinSock",
+    "Wdk_Graphics_Direct3D",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+socket2 = { version = "0.5", features = ["all"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }

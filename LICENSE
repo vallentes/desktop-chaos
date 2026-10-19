@@ -1,0 +1,17 @@
+Copyright (c) 2026 Valentin Vina (Vallentes). All rights reserved.
+
+The source code, artwork, sounds and text of Desktop Chaos are published for
+viewing only. No permission is granted to copy, modify, distribute,
+sublicense or sell any part of them without prior written permission from
+the copyright holder.
+
+You may download and use the official Desktop Chaos release builds for free.
+
+Third-party components keep their own licenses, including:
+  - Inter, Rajdhani and JetBrains Mono fonts: SIL Open Font License 1.1
+  - PixiJS: MIT License
+  - Rapier physics engine: Apache License 2.0
+  - Tauri, React and other open-source dependencies: see their respective
+    licenses in package.json and Cargo.lock.
+
+Contact: https://buymeacoffee.com/vallentes

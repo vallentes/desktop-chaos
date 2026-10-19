@@ -1,0 +1,140 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#stage,
+#stage canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  left: 50%;
+  bottom: 56px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 14px;
+  background: rgba(12, 12, 16, 0.86);
+  border: 1px solid rgba(255, 106, 32, 0.55);
+  box-shadow: 0 0 24px rgba(255, 70, 20, 0.35);
+  font-family: Rajdhani, 'Segoe UI', sans-serif;
+  cursor: default;
+}
+
+.hud .tool {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hud .tool:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hud .tool.on {
+  background: rgba(255, 90, 30, 0.25);
+  border-color: #ff6a20;
+}
+
+.hud .tool kbd {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font: 700 9px Rajdhani, sans-serif;
+  color: #ffb27a;
+}
+
+.hud .sep {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 4px;
+}
+
+.hud .action {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font: 700 14px Rajdhani, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.hud .action.done {
+  background: linear-gradient(135deg, #ff6a20, #ff2d3a);
+  border-color: transparent;
+}
+
+.hint {
+  position: fixed;
+  left: 50%;
+  bottom: 112px;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(12, 12, 16, 0.75);
+  color: #ffd2b5;
+  font: 600 14px Rajdhani, 'Segoe UI', sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.countdown {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  font: 700 160px Rajdhani, 'Segoe UI', sans-serif;
+  color: #fff;
+  text-shadow:
+    0 0 18px #ff4a1a,
+    0 0 48px #ff2d3a,
+    0 4px 0 #8a1a10;
+  pointer-events: none;
+}
+
+.countdown.pop {
+  animation: pop 0.9s ease-out both;
+}
+
+@keyframes pop {
+  0% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+body.obs .hud,
+body.obs .hint {
+  display: none;
+}
