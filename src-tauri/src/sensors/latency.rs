@@ -19,7 +19,7 @@ impl Latency {
     }
 }
 
-fn gateway() -> Option<Ipv4Addr> {
+pub(crate) fn gateway() -> Option<Ipv4Addr> {
     netdev::get_default_interface().ok()?.gateway?.ipv4.first().copied()
 }
 

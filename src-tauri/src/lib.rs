@@ -91,7 +91,8 @@ fn setup(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 
     let autostarted = std::env::args().any(|a| a == "--autostart");
     if !settings.onboarded || !autostarted {
-        windows_util::show_main(app, None);
+        let args: Vec<String> = std::env::args().collect();
+        windows_util::show_main(app, open_arg(&args).as_deref());
     }
     Ok(())
 }
@@ -108,8 +109,9 @@ fn spawn_monitor_watch(app: AppHandle) {
 
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            windows_util::show_main(app, None);
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            // `desktop-chaos --open widgets` jumps straight to a section.
+            windows_util::show_main(app, open_arg(&args).as_deref());
         }))
         .plugin(tauri_plugin_log::Builder::new().level(log::LevelFilter::Info).build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().with_handler(shortcuts::handler).build())
@@ -185,4 +187,24 @@ pub fn run() {
                 }
             }
         });
+}
+
+/// The section named by `--open <section>`, if any.
+fn open_arg(args: &[String]) -> Option<String> {
+    let i = args.iter().position(|a| a == "--open")?;
+    let s = args.get(i + 1)?;
+    ["dashboard", "arsenal", "chaos", "widgets", "streamer", "settings", "support"].contains(&s.as_str()).then(|| s.clone())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::open_arg;
+
+    #[test]
+    fn open_arg_accepts_known_sections_only() {
+        let a = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(open_arg(&a(&["app", "--open", "widgets"])).as_deref(), Some("widgets"));
+        assert_eq!(open_arg(&a(&["app", "--open", "../etc"])), None);
+        assert_eq!(open_arg(&a(&["app"])), None);
+    }
 }

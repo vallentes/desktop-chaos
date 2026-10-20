@@ -17,7 +17,7 @@ export interface Polyline {
 export function crackPattern(cx: number, cy: number, radius: number, power: number, seed: number): Polyline[] {
   const r = new Rng(seed);
   const lines: Polyline[] = [];
-  const spokes = Math.round(6 + power * 4 + r.range(0, 4));
+  const spokes = Math.round(5 + power * 1.5 + r.range(0, 2));
   const angles: number[] = [];
   for (let i = 0; i < spokes; i++) angles.push(((i + r.range(-0.35, 0.35)) / spokes) * Math.PI * 2);
 
@@ -35,7 +35,7 @@ export function crackPattern(cx: number, cy: number, radius: number, power: numb
     spokePts.push(pts);
     lines.push({ points: pts, width: r.range(1, 2.2) });
     // Side branches.
-    const branches = r.int(0, Math.round(1 + power));
+    const branches = r.int(0, Math.round(1 + power / 2));
     for (let b = 0; b < branches; b++) {
       const from = pts[r.int(1, pts.length - 1)];
       let ba = a0 + r.pick([-1, 1]) * r.range(0.4, 0.9);

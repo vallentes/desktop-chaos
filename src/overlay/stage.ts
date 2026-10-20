@@ -76,7 +76,8 @@ export class Stage {
   onFrame: ((dt: number) => void) | null = null;
   onError: (e: unknown) => void = (e) => console.error(e);
 
-  async init(host: HTMLElement, floorFromBottom = 0) {
+  /** `keepFrames` keeps the last frame readable (README capture only). */
+  async init(host: HTMLElement, floorFromBottom = 0, keepFrames = false) {
     this.resolution = Math.min(window.devicePixelRatio || 1, 2);
     await this.app.init({
       backgroundAlpha: 0,
@@ -87,6 +88,7 @@ export class Stage {
       autoStart: false,
       preference: 'webgl',
       powerPreference: 'low-power',
+      preserveDrawingBuffer: keepFrames,
     });
     this.app.ticker.stop();
     host.appendChild(this.app.canvas);
@@ -175,8 +177,11 @@ export class Stage {
     if (!this.hasDecals) return;
     const g = new Graphics().circle(x, y, r).fill(0xffffff);
     g.blendMode = 'erase';
-    this.app.renderer.render({ container: g, target: this.decalRT, clear: false });
-    g.destroy();
+    // The blend mode only applies below the root of a render, so wrap it (otherwise it paints white).
+    const wrap = new Container();
+    wrap.addChild(g);
+    this.app.renderer.render({ container: wrap, target: this.decalRT, clear: false });
+    wrap.destroy({ children: true });
   }
 
   async getPhysics(): Promise<Physics<BodyData>> {
@@ -230,9 +235,12 @@ export class Stage {
   }
 
   private generation = 0;
+  /** Effects with their own memory (hammer hit counts) register a reset here. */
+  onClear: (() => void)[] = [];
 
   clearNow() {
     this.generation++;
+    for (const f of this.onClear) f();
     for (const e of this.entities) e.destroy?.(this);
     this.entities = [];
     this.forces = [];

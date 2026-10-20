@@ -453,3 +453,23 @@ mod dump {
         println!("{}", serde_json::to_string_pretty(&snap).unwrap());
     }
 }
+
+#[cfg(test)]
+mod series {
+    /// `cargo test print_series -- --ignored --nocapture`: 40 real samples, 250 ms apart (README screenshots).
+    #[test]
+    #[ignore]
+    fn print_series() {
+        let mut s = super::Sampler::new();
+        let lat = super::latency::Latency::default();
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        let mut out = vec![];
+        for _ in 0..40 {
+            std::thread::sleep(std::time::Duration::from_millis(250));
+            let mut snap = super::redact(s.sample(true, &lat));
+            snap.net.lan_ms = super::latency::gateway().and_then(super::latency::ping);
+            out.push(snap);
+        }
+        println!("SERIES{}", serde_json::to_string(&out).unwrap());
+    }
+}

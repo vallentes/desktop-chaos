@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:capture": "vite --mode capture",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:rust": "cargo test --workspace",
@@ -30,6 +31,7 @@
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.4",
+    "gifenc": "^1.0.3",
     "jsqr": "1.4.0",
     "typescript": "5.6.3",
     "vite": "5.4.11",

@@ -90,7 +90,8 @@ class Monster implements Entity {
     public icons: FakeIcon[],
     rng: Rng,
   ) {
-    this.x = s.w + 80;
+    // Fake icons sit on the left like real desktop icons, so it comes in from there.
+    this.x = -80;
     this.y = Math.min(s.floor - 60, 120 + rng.range(0, s.h * 0.4));
     this.hue = rng.pick([0x7d4bff, 0x2ecc71, 0xff5e3a, 0x1fb6ff]);
     this.body.addChild(this.gfx);
@@ -118,12 +119,12 @@ class Monster implements Entity {
           this.target = left[0];
         }
       }
-      const tx = this.leaving ? s.w + 200 : this.target!.x + 26;
+      const tx = this.leaving ? -220 : this.target!.x + 26;
       const ty = this.leaving ? this.y : this.target!.y - 4;
       const dx = tx - this.x;
       const dy = ty - this.y;
       const d = Math.hypot(dx, dy);
-      const speed = 170;
+      const speed = 210;
       if (d > 4) {
         this.face = dx < 0 ? -1 : 1;
         this.x += (dx / d) * Math.min(d, speed * dt);
@@ -136,7 +137,7 @@ class Monster implements Entity {
           s.spawn({ kind: Kind.Debris, x: this.target.x, y: this.target.y, vx: s.rng.range(-150, 150), vy: s.rng.range(-250, -50), life: 1.2, size: s.rng.range(2, 5), color: s.rng.pick([0xf6c94a, 0xffffff, 0x8ab4f8, 0x9aa0a6]), gravity: 900, spin: s.rng.range(-10, 10), alpha: 1, alpha1: 0, bounce: 0.3 });
         }
       }
-      if (this.leaving && this.x > s.w + 150) return false;
+      if (this.leaving && this.x < -150) return false;
     }
     if (this.target && this.chew > 0) {
       const k = Math.max(0, this.chew / 0.7);

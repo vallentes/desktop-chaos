@@ -20,7 +20,7 @@ interface Hit {
 const hits = new WeakMap<Stage, Hit[]>();
 
 function drawCracks(s: Stage, x: number, y: number, power: number, seed: number) {
-  const radius = (60 + power * 45) * s.options.hammerPower;
+  const radius = (55 + power * 32) * s.options.hammerPower;
   const lines = crackPattern(x, y, radius, power, seed);
   const g = new Graphics();
   // Dark under-stroke keeps cracks readable on white pages, bright stroke on dark ones.
@@ -32,8 +32,13 @@ function drawCracks(s: Stage, x: number, y: number, power: number, seed: number)
 }
 
 function hammerHit(s: Stage, x: number, y: number) {
-  const list = hits.get(s) ?? [];
-  hits.set(s, list);
+  let list = hits.get(s);
+  if (!list) {
+    const fresh: Hit[] = [];
+    list = fresh;
+    hits.set(s, fresh);
+    s.onClear.push(() => (fresh.length = 0));
+  }
   const now = performance.now();
   let h = list.find((p) => (p.x - x) ** 2 + (p.y - y) ** 2 < 55 * 55);
   if (!h) {

@@ -8,6 +8,8 @@
   &nbsp;·&nbsp; <a href="PRIVACY.md">Privacy</a>
 </p>
 
+<p align="center"><img src="docs/media/hero.gif" width="780" alt="A desktop getting wrecked: hammer cracks, bullet holes, paint, a meteor, a laser, fire and a black hole, then the reset bomb wipes it clean"></p>
+
 ## Download
 
 | Windows 10 / 11 | macOS 11+ (Apple Silicon and Intel) |
@@ -30,11 +32,32 @@ Everything is drawn on a see-through layer above your screen. Your files, icons,
 | 🪟 **Broken glass**: shards with real physics | 🎨 **Paintball**: neon splats that drip and stay | ❄️ **Snowstorm**: snow that settles at the bottom |
 | 🌋 **Earthquake**: shakes the layer, never your windows | 🔆 **Laser**: follows the mouse and burns a trail | 💣 **Reset bomb**: one last boom, then everything is gone |
 
+<table>
+<tr>
+<td width="50%"><img src="docs/media/impact.gif" alt="Hammer cracks growing with each hit, a burst of bullet holes, a shattered pane and paint splats that drip"><br><b>Hammer, machine gun, broken glass, paintball</b></td>
+<td width="50%"><img src="docs/media/fire-water.gif" alt="A flamethrower sets fires that spread and leave scorch marks, then the water cannon puts them out with steam"><br><b>Flamethrower and water cannon</b></td>
+</tr>
+<tr>
+<td><img src="docs/media/sky.gif" alt="Snow falling, lightning strikes and a meteor that leaves a burning crater"><br><b>Snowstorm, lightning, meteor</b></td>
+<td><img src="docs/media/blackhole.gif" alt="Paint, falling crates and glass shards get pulled into a black hole that rubs out the marks around it"><br><b>Black hole (with gravity objects and glass)</b></td>
+</tr>
+<tr>
+<td><img src="docs/media/monster.gif" alt="A fuzzy monster walks in and eats drawn fake desktop icons one by one"><br><b>Monster (fake icons only)</b></td>
+<td><img src="docs/media/laser-quake.gif" alt="A laser burns a circle into the screen, then an earthquake opens cracks along the bottom"><br><b>Laser and earthquake</b></td>
+</tr>
+</table>
+
+<p align="center"><img src="docs/media/bomb.gif" width="49%" alt="The reset bomb drops in, its fuse burns down, and the explosion wipes every mark off the screen"><br><b>Reset bomb</b>: one last boom and the screen is clean again.</p>
+
 **Pick up** a weapon to use it with the mouse: the screen becomes clickable until you put it away with `Esc` or a right-click. Number keys switch weapons. **Fire** lets a weapon go off on its own.
+
+<p align="center"><img src="docs/media/app-arsenal.png" width="780" alt="The Arsenal screen with all 15 weapons, their options and Pick up and Fire buttons"></p>
 
 ### Chaos Mode
 
 Five presets (Mild Chaos, Gamer Rage, Apocalypse, Total Destruction, Random Madness) or your own mix, with duration, intensity, pace, sound, a 3-2-1 countdown and a choice of ending (fade away, reset bomb, or leave the mess).
+
+<p align="center"><img src="docs/media/app-chaos.png" width="780" alt="The Chaos Mode screen with five presets, a weapon picker, duration, intensity and pace sliders"></p>
 
 ### Always a way out
 
@@ -43,12 +66,20 @@ Five presets (Mild Chaos, Gamer Rage, Apocalypse, Total Destruction, Random Madn
 
 ### Widgets
 
+<p align="center"><img src="docs/media/widgets.png" width="780" alt="Floating widgets around an open window: clock with uptime, RAM, GPU, processes, network, CPU per core, disks, world clocks and an analog clock"></p>
+
 Floating, transparent system monitors you can drag anywhere, on any screen: CPU (per core, clock, temperature, power), GPU (load, VRAM, temperature, fan), RAM, network (up/down, LAN and internet latency), disks (read/write, per-drive usage and temperature), battery, motherboard fans and voltages, top processes, a clock with uptime, world clocks, an analog clock, a countdown, a stopwatch and custom text.
 
 * Size, opacity, always on top or on the desktop, click-through, locked positions
 * Seven themes (Gaming, Minimal Dark, Minimal White, Cyberpunk, Gaming RGB, Professional, Custom)
 * Layouts you can switch between, export and import
 * Streamer-safe mode hides IP addresses, the computer name and process names
+
+<p align="center"><img src="docs/media/widget-themes.png" width="780" alt="The CPU widget in six themes: Gaming, Minimal Dark, Minimal White, Cyberpunk, Gaming RGB and Professional"></p>
+
+<p align="center"><img src="docs/media/app-widgets.png" width="49%" alt="The Widgets screen: show and lock toggles, theme picker and a gallery of live widget previews"> <img src="docs/media/app-dashboard.png" width="49%" alt="The Dashboard: status, the emergency stop shortcut, quick weapons, Chaos Mode and clean-up"></p>
+
+The widget screenshots use real readings recorded on a Windows PC (Intel i5-10400F, RTX 3060), with names and addresses hidden as in streamer-safe mode. The effect clips are rendered by the app's own engine over a drawn desktop.
 
 **Real readings only.** If your system does not share a value, the widget says *unavailable*. What works without admin rights:
 
@@ -169,6 +200,8 @@ cargo test --workspace
 ```
 
 To check effects in a normal browser, run `npm run dev` and open `http://localhost:1430/harness.html`; `fx('meteor', 0.5, 0.5)` in the console fires one.
+
+README media: `npm run dev:capture`, then `/capture.html` at 960x540 (`await capture("hero")` renders a GIF into `docs/media`) and `/showcase.html?view=layout` or `?view=themes` for the widget pictures.
 
 Release builds come from GitHub Actions when a `v*` tag is pushed (`.github/workflows/release.yml`). The updater key lives outside the repository; its private half is the `TAURI_SIGNING_PRIVATE_KEY` secret.
 

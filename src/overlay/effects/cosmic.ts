@@ -30,7 +30,7 @@ function impact(s: Stage, x: number, y: number, intensity: number, seed: number)
   const r = 30 + intensity * 45;
   crater(s, x, y, r, seed);
   shockwave(s, x, y, 160 + intensity * 260, 0.7);
-  s.flash(0xffb070, 0.25 + intensity * 0.25);
+  s.flash(0xffb070, 0.1 + intensity * 0.15);
   s.shake(6 + intensity * 12, 0.5);
   debris(s, x, y, 40, [0x4a3626, 0x6b4b33, 0x2b1d14, 0x8c6a4a], 500 + intensity * 300);
   sparks(s, x, y, 40, { speed: 600 });
