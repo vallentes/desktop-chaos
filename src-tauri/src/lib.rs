@@ -128,9 +128,9 @@ pub fn run() {
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
                     let _ = window.hide();
-                    let app = window.app_handle();
-                    state(app).widgets.screen_watching.store(false, std::sync::atomic::Ordering::Relaxed);
-                    widgets::sync(app);
+                    let app = window.app_handle().clone();
+                    state(&app).widgets.screen_watching.store(false, std::sync::atomic::Ordering::Relaxed);
+                    tauri::async_runtime::spawn(async move { widgets::sync(&app) });
                 }
             } else if let Some(id) = widgets::id_from_label(label) {
                 if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
@@ -171,6 +171,7 @@ pub fn run() {
             commands::open_data_folder,
             commands::show_main,
             commands::quit_app,
+            commands::frontend_log,
             updater::check_for_update,
             updater::install_update,
         ])

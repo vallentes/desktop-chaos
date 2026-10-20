@@ -14,7 +14,7 @@ use tauri::{AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUr
 
 pub const KINDS: &[(&str, f64, f64)] = &[
     ("clock", 450.0, 120.0),
-    ("cpu", 450.0, 220.0),
+    ("cpu", 450.0, 235.0),
     ("gpu", 450.0, 220.0),
     ("ram", 450.0, 210.0),
     ("network", 450.0, 215.0),

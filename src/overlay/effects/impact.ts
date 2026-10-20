@@ -56,7 +56,7 @@ function hammerHit(s: Stage, x: number, y: number) {
 
 export const hammer: EffectImpl = {
   trigger(s, t) {
-    const n = 1 + Math.round(t.intensity * 4);
+    const n = 1 + Math.round(t.intensity * 2);
     const x = t.x;
     const y = t.y;
     repeat(s, n, 0.18, () => hammerHit(s, x + t.rng.range(-10, 10), y + t.rng.range(-10, 10)));

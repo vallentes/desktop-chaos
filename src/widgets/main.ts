@@ -62,7 +62,7 @@ function fit() {
 
 const BASE: Record<string, [number, number]> = {
   clock: [450, 120],
-  cpu: [450, 220],
+  cpu: [450, 235],
   gpu: [450, 220],
   ram: [450, 210],
   network: [450, 215],

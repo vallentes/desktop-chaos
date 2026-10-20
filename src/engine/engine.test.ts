@@ -182,3 +182,10 @@ describe('snow pile', () => {
     expect(s.melt(10)).toBe(false);
   });
 });
+
+describe('crack radius guard', () => {
+  it('a NaN radius would leave single-point spokes (the bug normalizeToolOptions prevents)', () => {
+    const lines = crackPattern(0, 0, 100, 1, 3);
+    for (const l of lines) for (const p of l.points) expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
+  });
+});

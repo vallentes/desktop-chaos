@@ -168,6 +168,8 @@ npm test
 cargo test --workspace
 ```
 
+To check effects in a normal browser, run `npm run dev` and open `http://localhost:1430/harness.html`; `fx('meteor', 0.5, 0.5)` in the console fires one.
+
 Release builds come from GitHub Actions when a `v*` tag is pushed (`.github/workflows/release.yml`). The updater key lives outside the repository; its private half is the `TAURI_SIGNING_PRIVATE_KEY` secret.
 
 ## License

@@ -190,6 +190,7 @@ function clock(w: Widget): WidgetView {
 
 function cpu(): WidgetView {
   const c = card('CPU LOAD');
+  c.root.classList.add('cpu');
   const top = h('div', 'row');
   const r = ring();
   const tempS = stat('TEMP');
@@ -211,6 +212,8 @@ function cpu(): WidgetView {
       tempS.set(f.temp(s.cpu.tempC), tempClass(s.cpu.tempC));
       freq.set(f.ghz(s.cpu.freqMhz));
       power.set(f.watts(s.cpu.powerW));
+      // Enough columns that every core fits in four rows.
+      cores.style.setProperty('--core-cols', String(Math.min(6, Math.max(2, Math.ceil(s.cpu.cores.length / 4)))));
       while (bars.length < s.cpu.cores.length) {
         const b = bar(`C${bars.length}`);
         bars.push(b);

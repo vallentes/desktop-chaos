@@ -33,11 +33,17 @@ pub fn handler(app: &AppHandle, sc: &Shortcut, ev: ShortcutEvent) {
         return;
     }
     let st = state(app);
-    if st.shortcuts.stop.lock().unwrap().as_ref() == Some(sc) {
-        control::stop_everything(app);
-    } else if st.shortcuts.arm.lock().unwrap().as_ref() == Some(sc) {
-        control::toggle_arm(app);
-    }
+    let stop = st.shortcuts.stop.lock().unwrap().as_ref() == Some(sc);
+    let arm = st.shortcuts.arm.lock().unwrap().as_ref() == Some(sc);
+    // Off the main thread: both actions talk to overlay windows, which wait on it.
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        if stop {
+            control::stop_everything(&app);
+        } else if arm {
+            control::toggle_arm(&app);
+        }
+    });
 }
 
 /// (Re)registers both shortcuts from the settings. Errors are kept for the Settings screen.

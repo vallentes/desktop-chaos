@@ -10,7 +10,7 @@ import { loadRapier, Physics, PPM, BodyHandle } from '../engine/physics';
 import { QualityController } from '../engine/quality';
 import { Rng } from '../engine/rng';
 import { SnowPile } from '../engine/snow';
-import { DEFAULT_TOOL_OPTIONS, ToolOptions } from '../shared/effects';
+import { DEFAULT_TOOL_OPTIONS, normalizeToolOptions, ToolOptions } from '../shared/effects';
 import type { OverlayConfig } from '../shared/types';
 
 export interface Entity {
@@ -74,6 +74,7 @@ export class Stage {
   onIdle: (empty: boolean) => void = () => {};
   /** Set by the frame loop: per-frame hook for the armed tool (hold-to-fire). */
   onFrame: ((dt: number) => void) | null = null;
+  onError: (e: unknown) => void = (e) => console.error(e);
 
   async init(host: HTMLElement, floorFromBottom = 0) {
     this.resolution = Math.min(window.devicePixelRatio || 1, 2);
@@ -115,7 +116,13 @@ export class Stage {
   private onResize(floorFromBottom: number) {
     this.measure(floorFromBottom);
     this.particles.floor = this.floor;
-    this.decalRT.resize(this.w, this.h);
+    // A fresh texture for the new size (resizing in place leaves the sprite at the old size).
+    // Overlay windows are created small and then sized to their monitor, so this always runs once.
+    const old = this.decalRT;
+    this.decalRT = RenderTexture.create({ width: this.w, height: this.h, resolution: this.resolution });
+    this.decalSprite.texture = this.decalRT;
+    old.destroy(true);
+    this.hasDecals = false;
     this.snow = new SnowPile(this.w);
     this.physics?.resize(this.w, this.floor);
     this.app.render();
@@ -135,7 +142,7 @@ export class Stage {
     this.baseBudget = c.particleBudget;
     this.particles.budget = this.quality.budget(this.baseBudget);
     this.intensity = c.intensity;
-    this.options = c.toolOptions;
+    this.options = normalizeToolOptions(c.toolOptions);
   }
 
   /** Scales a spawn count by quality and free budget. */
@@ -285,7 +292,14 @@ export class Stage {
       this.particles.budget = this.quality.budget(this.baseBudget);
       if (this.physics) this.physics.maxBodies = Math.round(60 + 100 * (this.quality.level / 2));
     }
-    this.update(dt);
+    try {
+      this.update(dt);
+    } catch (e) {
+      // One broken effect must never freeze the overlay: drop the moving parts and carry on.
+      this.onError(e);
+      this.entities = [];
+      this.forces = [];
+    }
     this.app.render();
     if (this.busy) {
       requestAnimationFrame(this.frame);
@@ -528,18 +542,24 @@ function makeTextures(): Texture[] {
     g.fillStyle = grad;
     g.fillRect(cx, 24, cell, 16);
   };
+  // Snowflake with a thin dark rim, so it still shows on white pages.
   const flake = (cx: number) => {
-    g.strokeStyle = '#fff';
-    g.lineWidth = 6;
     g.lineCap = 'round';
-    for (let k = 0; k < 3; k++) {
-      const a = (k * Math.PI) / 3;
-      g.beginPath();
-      g.moveTo(cx + 32 - Math.cos(a) * 26, 32 - Math.sin(a) * 26);
-      g.lineTo(cx + 32 + Math.cos(a) * 26, 32 + Math.sin(a) * 26);
-      g.stroke();
+    for (const [style, width] of [['rgba(30,50,80,0.6)', 10], ['#fff', 5]] as const) {
+      g.strokeStyle = style;
+      g.lineWidth = width;
+      for (let k = 0; k < 3; k++) {
+        const a = (k * Math.PI) / 3;
+        g.beginPath();
+        g.moveTo(cx + 32 - Math.cos(a) * 25, 32 - Math.sin(a) * 25);
+        g.lineTo(cx + 32 + Math.cos(a) * 25, 32 + Math.sin(a) * 25);
+        g.stroke();
+      }
     }
-    soft(cx, 0.2);
+    g.fillStyle = '#fff';
+    g.beginPath();
+    g.arc(cx + 32, 32, 6, 0, Math.PI * 2);
+    g.fill();
   };
   const shard = (cx: number) => {
     g.fillStyle = '#fff';

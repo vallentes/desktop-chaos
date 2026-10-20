@@ -2,6 +2,8 @@
 //  - a transparent, click-through Tauri window per monitor (events come from Rust), and
 //  - an OBS browser source served from 127.0.0.1 (events come over Server-Sent Events).
 
+// Pixi compiles shader glue with new Function by default; the app's CSP forbids eval.
+import 'pixi.js/unsafe-eval';
 import '@fontsource/rajdhani/700.css';
 import './overlay.css';
 import { EFFECTS, EffectId } from '../shared/effects';
@@ -14,6 +16,14 @@ const params = new URLSearchParams(location.search);
 const isTauri = '__TAURI_INTERNALS__' in window;
 const monitor = Number(params.get('m') ?? 0);
 const floorFromBottom = Number(params.get('floor') ?? 0);
+
+/** Writes to the app's log file (Tauri only), so overlay problems can be diagnosed. */
+function log(level: 'info' | 'warn' | 'error', message: string) {
+  if (!isTauri) return;
+  void import('@tauri-apps/api/core').then(({ invoke }) => invoke('frontend_log', { level, message }).catch(() => {}));
+}
+window.addEventListener('error', (e) => log('error', `${e.message} at ${e.filename}:${e.lineno}`));
+window.addEventListener('unhandledrejection', (e) => log('error', `unhandled: ${String((e.reason as Error)?.stack ?? e.reason)}`));
 
 const stage = new Stage();
 let lastSeq = 0;
@@ -120,6 +130,7 @@ async function main() {
     lastSeq = Math.max(lastSeq, ev.seq);
     switch (ev.type) {
       case 'trigger':
+        if (ev.trigger.source !== 'user') log('info', `trigger ${ev.trigger.effect} on ${stage.w}x${stage.h}`);
         // On stream: chaos and API effects always show; hand-made hits only from the mirrored screen.
         if (!isTauri && ev.trigger.source === 'user' && ev.trigger.monitor !== mirror) return;
         runTrigger(stage, ev.trigger);
@@ -146,6 +157,7 @@ async function main() {
   };
 
   stage.onIdle = (empty) => transport.idle(empty);
+  stage.onError = (e) => log('error', `effect failed: ${String((e as Error)?.stack ?? e).slice(0, 800)}`);
   stage.onFrame = (dt) => {
     if (!armed) return;
     const impl = IMPLS[armed];
@@ -155,6 +167,7 @@ async function main() {
 
   transport.subscribe(handle);
   const boot = await transport.ready();
+  log('info', `overlay ready: ${stage.w}x${stage.h} at ${window.devicePixelRatio}x, renderer ${stage.app.renderer.name}`);
   mirror = boot.mirror;
   handle({ type: 'config', seq: 0, config: boot.config });
   if (boot.armed) applyArm(boot.armed);

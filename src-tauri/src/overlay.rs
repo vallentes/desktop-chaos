@@ -36,6 +36,7 @@ struct Win {
 pub struct Overlays {
     wins: Mutex<HashMap<usize, Win>>,
     layout: Mutex<Vec<MonitorInfo>>,
+    creating: Mutex<()>,
 }
 
 pub fn label(idx: usize) -> String {
@@ -110,18 +111,24 @@ fn create(app: &AppHandle, m: &MonitorInfo) -> tauri::Result<()> {
     Ok(())
 }
 
+// Lock rule: `wins` is never held while calling into a window (show, hide, emit, create).
+// Window calls from other threads wait for the main thread, and the main thread may itself
+// be waiting for `wins`; holding both deadlocks the app.
 impl Overlays {
     /// Makes sure the overlay for `idx` exists. Returns false if that monitor is gone.
     fn ensure(&self, app: &AppHandle, idx: usize) -> bool {
+        // Serializes creation so two callers cannot build the same window twice.
+        let _guard = self.creating.lock().unwrap();
         if app.get_webview_window(&label(idx)).is_some() {
             return true;
         }
         let Some(m) = monitors(app).into_iter().find(|m| m.index == idx) else { return false };
+        self.wins.lock().unwrap().insert(idx, Win::default());
         if let Err(e) = create(app, &m) {
             log::error!("could not create overlay for monitor {idx}: {e}");
+            self.wins.lock().unwrap().remove(&idx);
             return false;
         }
-        self.wins.lock().unwrap().insert(idx, Win::default());
         true
     }
 
@@ -130,19 +137,25 @@ impl Overlays {
         if !self.ensure(app, idx) {
             return;
         }
-        let mut wins = self.wins.lock().unwrap();
-        let w = wins.entry(idx).or_default();
-        if !w.ready {
-            w.pending.push(ev);
-            return;
-        }
-        if ev.needs_window() && !w.visible {
-            if let Some(win) = app.get_webview_window(&label(idx)) {
-                let _ = win.show();
+        let show = {
+            let mut wins = self.wins.lock().unwrap();
+            let w = wins.entry(idx).or_default();
+            if !w.ready {
+                w.pending.push(ev);
+                return;
+            }
+            w.last_seq = w.last_seq.max(ev.seq());
+            let show = ev.needs_window() && !w.visible;
+            if show {
                 w.visible = true;
             }
+            show
+        };
+        if show {
+            if let Some(win) = app.get_webview_window(&label(idx)) {
+                let _ = win.show();
+            }
         }
-        w.last_seq = w.last_seq.max(ev.seq());
         let _ = app.emit_to(label(idx), "fx://event", &ev);
     }
 
@@ -170,13 +183,19 @@ impl Overlays {
 
     /// The overlay has nothing left to animate. Hide it if it is also empty and nothing newer was sent.
     pub fn idle(&self, app: &AppHandle, idx: usize, empty: bool, seq: u64, armed: bool) {
-        let mut wins = self.wins.lock().unwrap();
-        let Some(w) = wins.get_mut(&idx) else { return };
-        if empty && !armed && seq >= w.last_seq && w.pending.is_empty() && w.visible {
+        let hide = {
+            let mut wins = self.wins.lock().unwrap();
+            let Some(w) = wins.get_mut(&idx) else { return };
+            let hide = empty && !armed && seq >= w.last_seq && w.pending.is_empty() && w.visible;
+            if hide {
+                w.visible = false;
+            }
+            hide
+        };
+        if hide {
             if let Some(win) = app.get_webview_window(&label(idx)) {
                 let _ = win.hide();
             }
-            w.visible = false;
         }
     }
 
@@ -200,17 +219,21 @@ impl Overlays {
     }
 
     pub fn hide_all(&self, app: &AppHandle) {
-        let mut wins = self.wins.lock().unwrap();
-        for (idx, w) in wins.iter_mut() {
-            if let Some(win) = app.get_webview_window(&label(*idx)) {
+        let ids: Vec<usize> = {
+            let mut wins = self.wins.lock().unwrap();
+            wins.values_mut().for_each(|w| w.visible = false);
+            wins.keys().copied().collect()
+        };
+        for idx in ids {
+            if let Some(win) = app.get_webview_window(&label(idx)) {
                 let _ = win.hide();
             }
-            w.visible = false;
         }
     }
 
     /// Closes every overlay (monitor layout changed, or desktop effects switched off).
     pub fn destroy_all(&self, app: &AppHandle) {
+        let _guard = self.creating.lock().unwrap();
         self.wins.lock().unwrap().clear();
         for (l, win) in app.webview_windows() {
             if index_from_label(&l).is_some() {
@@ -224,7 +247,8 @@ impl Overlays {
         let now = monitors(app);
         let changed = {
             let mut l = self.layout.lock().unwrap();
-            let c = *l != now;
+            // The first look only records the layout.
+            let c = !l.is_empty() && *l != now;
             *l = now;
             c
         };

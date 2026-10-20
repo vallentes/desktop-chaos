@@ -57,7 +57,7 @@ pub fn platform() -> &'static str {
 }
 
 #[tauri::command]
-pub fn get_bootstrap(app: AppHandle) -> Bootstrap {
+pub async fn get_bootstrap(app: AppHandle) -> Bootstrap {
     let st = state(&app);
     let b = Bootstrap {
         settings: st.settings.read().unwrap().clone(),
@@ -111,13 +111,13 @@ pub fn apply_settings_patch(app: &AppHandle, patch: Value) -> CmdResult<Settings
 }
 
 #[tauri::command]
-pub fn update_settings(app: AppHandle, window: WebviewWindow, patch: Value) -> CmdResult<Settings> {
+pub async fn update_settings(app: AppHandle, window: WebviewWindow, patch: Value) -> CmdResult<Settings> {
     main_only(&window)?;
     apply_settings_patch(&app, patch)
 }
 
 #[tauri::command]
-pub fn get_monitors(app: AppHandle) -> Vec<MonitorInfo> {
+pub async fn get_monitors(app: AppHandle) -> Vec<MonitorInfo> {
     monitors(&app)
 }
 
@@ -126,40 +126,40 @@ pub fn get_monitors(app: AppHandle) -> Vec<MonitorInfo> {
 // ---------------------------------------------------------------------------------------------
 
 #[tauri::command]
-pub fn fire_effect(app: AppHandle, window: WebviewWindow, effect: String, monitor: Option<usize>) -> CmdResult<()> {
+pub async fn fire_effect(app: AppHandle, window: WebviewWindow, effect: String, monitor: Option<usize>) -> CmdResult<()> {
     main_only(&window)?;
     control::fire_now(&app, &effect, monitor)
 }
 
 #[tauri::command]
-pub fn arm_tool(app: AppHandle, tool: String) -> CmdResult<()> {
+pub async fn arm_tool(app: AppHandle, tool: String) -> CmdResult<()> {
     control::arm(&app, &tool)
 }
 
 #[tauri::command]
-pub fn disarm_tool(app: AppHandle) {
+pub async fn disarm_tool(app: AppHandle) {
     control::disarm(&app);
 }
 
 #[tauri::command]
-pub fn clear_effects(app: AppHandle, mode: Option<String>) {
+pub async fn clear_effects(app: AppHandle, mode: Option<String>) {
     control::clear(&app, mode.as_deref() == Some("fade"));
 }
 
 #[tauri::command]
-pub fn stop_everything(app: AppHandle) {
+pub async fn stop_everything(app: AppHandle) {
     control::stop_everything(&app);
 }
 
 #[tauri::command]
-pub fn start_chaos(app: AppHandle, window: WebviewWindow, config: ChaosConfig) -> CmdResult<ChaosStatus> {
+pub async fn start_chaos(app: AppHandle, window: WebviewWindow, config: ChaosConfig) -> CmdResult<ChaosStatus> {
     main_only(&window)?;
     apply_settings_patch(&app, json!({ "chaos": config.clone() }))?;
     control::start_chaos(&app, config)
 }
 
 #[tauri::command]
-pub fn stop_chaos(app: AppHandle) {
+pub async fn stop_chaos(app: AppHandle) {
     control::stop_chaos(&app, true);
 }
 
@@ -172,7 +172,7 @@ pub struct OverlayBoot {
 }
 
 #[tauri::command]
-pub fn overlay_ready(app: AppHandle, window: WebviewWindow) -> CmdResult<OverlayBoot> {
+pub async fn overlay_ready(app: AppHandle, window: WebviewWindow) -> CmdResult<OverlayBoot> {
     let idx = index_from_label(window.label()).ok_or("not an overlay")?;
     let st = state(&app);
     let boot = OverlayBoot { config: overlay_config(&app), armed: st.fx.armed(), mirror: st.settings.read().unwrap().obs_mirror_monitor };
@@ -181,7 +181,7 @@ pub fn overlay_ready(app: AppHandle, window: WebviewWindow) -> CmdResult<Overlay
 }
 
 #[tauri::command]
-pub fn overlay_idle(app: AppHandle, window: WebviewWindow, empty: bool, seq: u64) -> CmdResult<()> {
+pub async fn overlay_idle(app: AppHandle, window: WebviewWindow, empty: bool, seq: u64) -> CmdResult<()> {
     let idx = index_from_label(window.label()).ok_or("not an overlay")?;
     let st = state(&app);
     let armed = st.fx.armed().is_some();
@@ -190,7 +190,7 @@ pub fn overlay_idle(app: AppHandle, window: WebviewWindow, empty: bool, seq: u64
 }
 
 #[tauri::command]
-pub fn overlay_report(app: AppHandle, window: WebviewWindow, trigger: FxTrigger) -> CmdResult<()> {
+pub async fn overlay_report(app: AppHandle, window: WebviewWindow, trigger: FxTrigger) -> CmdResult<()> {
     index_from_label(window.label()).ok_or("not an overlay")?;
     control::report_manual(&app, trigger);
     Ok(())
@@ -201,12 +201,12 @@ pub fn overlay_report(app: AppHandle, window: WebviewWindow, trigger: FxTrigger)
 // ---------------------------------------------------------------------------------------------
 
 #[tauri::command]
-pub fn server_status(app: AppHandle) -> ServerStatus {
+pub async fn server_status(app: AppHandle) -> ServerStatus {
     server::status(&app)
 }
 
 #[tauri::command]
-pub fn regenerate_token(app: AppHandle, window: WebviewWindow) -> CmdResult<ServerStatus> {
+pub async fn regenerate_token(app: AppHandle, window: WebviewWindow) -> CmdResult<ServerStatus> {
     main_only(&window)?;
     server::regenerate_token(&state(&app));
     Ok(server::status(&app))
@@ -225,7 +225,7 @@ pub struct WidgetsState {
 }
 
 #[tauri::command]
-pub fn widgets_state(app: AppHandle) -> CmdResult<WidgetsState> {
+pub async fn widgets_state(app: AppHandle) -> CmdResult<WidgetsState> {
     let st = state(&app);
     let profile = st.settings.read().unwrap().active_profile;
     Ok(WidgetsState {
@@ -236,7 +236,7 @@ pub fn widgets_state(app: AppHandle) -> CmdResult<WidgetsState> {
 }
 
 #[tauri::command]
-pub fn add_widget(app: AppHandle, window: WebviewWindow, kind: String) -> CmdResult<Widget> {
+pub async fn add_widget(app: AppHandle, window: WebviewWindow, kind: String) -> CmdResult<Widget> {
     main_only(&window)?;
     let st = state(&app);
     let profile = st.settings.read().unwrap().active_profile;
@@ -259,7 +259,7 @@ pub fn add_widget(app: AppHandle, window: WebviewWindow, kind: String) -> CmdRes
 }
 
 #[tauri::command]
-pub fn update_widget(app: AppHandle, window: WebviewWindow, widget: Widget) -> CmdResult<Widget> {
+pub async fn update_widget(app: AppHandle, window: WebviewWindow, widget: Widget) -> CmdResult<Widget> {
     main_only(&window)?;
     let st = state(&app);
     let cur = widgets::get(&st.db, widget.id).ok_or("Widget not found")?;
@@ -275,7 +275,7 @@ pub fn update_widget(app: AppHandle, window: WebviewWindow, widget: Widget) -> C
 }
 
 #[tauri::command]
-pub fn remove_widget(app: AppHandle, window: WebviewWindow, id: i64) -> CmdResult<()> {
+pub async fn remove_widget(app: AppHandle, window: WebviewWindow, id: i64) -> CmdResult<()> {
     main_only(&window)?;
     widgets::delete(&state(&app).db, id).map_err(err)?;
     widgets::sync(&app);
@@ -283,7 +283,7 @@ pub fn remove_widget(app: AppHandle, window: WebviewWindow, id: i64) -> CmdResul
 }
 
 #[tauri::command]
-pub fn widget_bootstrap(app: AppHandle, window: WebviewWindow) -> CmdResult<Value> {
+pub async fn widget_bootstrap(app: AppHandle, window: WebviewWindow) -> CmdResult<Value> {
     let id = widgets::id_from_label(window.label()).ok_or("not a widget")?;
     let st = state(&app);
     let w = widgets::get(&st.db, id).ok_or("Widget not found")?;
@@ -299,7 +299,7 @@ pub fn widget_bootstrap(app: AppHandle, window: WebviewWindow) -> CmdResult<Valu
 }
 
 #[tauri::command]
-pub fn set_widget_edit_mode(app: AppHandle, on: bool) {
+pub async fn set_widget_edit_mode(app: AppHandle, on: bool) {
     let st = state(&app);
     st.widgets.edit_mode.store(on, Ordering::Relaxed);
     widgets::sync(&app);
@@ -307,7 +307,7 @@ pub fn set_widget_edit_mode(app: AppHandle, on: bool) {
 }
 
 #[tauri::command]
-pub fn watch_sensors(app: AppHandle, window: WebviewWindow, on: bool) -> CmdResult<()> {
+pub async fn watch_sensors(app: AppHandle, window: WebviewWindow, on: bool) -> CmdResult<()> {
     main_only(&window)?;
     state(&app).widgets.screen_watching.store(on, Ordering::Relaxed);
     widgets::sync(&app);
@@ -315,12 +315,12 @@ pub fn watch_sensors(app: AppHandle, window: WebviewWindow, on: bool) -> CmdResu
 }
 
 #[tauri::command]
-pub fn latest_snapshot(app: AppHandle) -> Option<sensors::Snapshot> {
+pub async fn latest_snapshot(app: AppHandle) -> Option<sensors::Snapshot> {
     state(&app).sensors.latest.lock().unwrap().clone()
 }
 
 #[tauri::command]
-pub fn create_profile(app: AppHandle, window: WebviewWindow, name: String, copy_current: bool) -> CmdResult<i64> {
+pub async fn create_profile(app: AppHandle, window: WebviewWindow, name: String, copy_current: bool) -> CmdResult<i64> {
     main_only(&window)?;
     let st = state(&app);
     let cur = st.settings.read().unwrap().active_profile;
@@ -330,7 +330,7 @@ pub fn create_profile(app: AppHandle, window: WebviewWindow, name: String, copy_
 }
 
 #[tauri::command]
-pub fn rename_profile(app: AppHandle, window: WebviewWindow, id: i64, name: String) -> CmdResult<()> {
+pub async fn rename_profile(app: AppHandle, window: WebviewWindow, id: i64, name: String) -> CmdResult<()> {
     main_only(&window)?;
     widgets::rename_profile(&state(&app).db, id, &name)?;
     let _ = app.emit("widgets://changed", ());
@@ -338,7 +338,7 @@ pub fn rename_profile(app: AppHandle, window: WebviewWindow, id: i64, name: Stri
 }
 
 #[tauri::command]
-pub fn delete_profile(app: AppHandle, window: WebviewWindow, id: i64) -> CmdResult<()> {
+pub async fn delete_profile(app: AppHandle, window: WebviewWindow, id: i64) -> CmdResult<()> {
     main_only(&window)?;
     let st = state(&app);
     widgets::delete_profile(&st.db, id)?;
@@ -391,8 +391,12 @@ pub async fn import_profile(app: AppHandle, window: WebviewWindow) -> CmdResult<
 
 /// Opens one of the two fixed donation links. No other URL can be opened from here.
 #[tauri::command]
-pub fn open_support_link(app: AppHandle, kind: Option<String>) -> CmdResult<()> {
-    let url = match kind.as_deref() {
+pub async fn open_support_link(app: AppHandle, kind: Option<String>) -> CmdResult<()> {
+    open_link(&app, kind.as_deref())
+}
+
+pub fn open_link(app: &AppHandle, kind: Option<&str>) -> CmdResult<()> {
+    let url = match kind {
         Some("revolut") => REVOLUT_URL,
         _ => COFFEE_URL,
     };
@@ -400,18 +404,18 @@ pub fn open_support_link(app: AppHandle, kind: Option<String>) -> CmdResult<()> 
 }
 
 #[tauri::command]
-pub fn open_data_folder(app: AppHandle) -> CmdResult<()> {
+pub async fn open_data_folder(app: AppHandle) -> CmdResult<()> {
     let dir = app.path().app_data_dir().map_err(err)?;
     app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(err)
 }
 
 #[tauri::command]
-pub fn show_main(app: AppHandle, section: Option<String>) {
+pub async fn show_main(app: AppHandle, section: Option<String>) {
     windows_util::show_main(&app, section.as_deref());
 }
 
 #[tauri::command]
-pub fn quit_app(app: AppHandle) {
+pub async fn quit_app(app: AppHandle) {
     control::stop_everything(&app);
     app.exit(0);
 }
@@ -424,5 +428,16 @@ mod tests {
     fn support_links_are_fixed() {
         assert_eq!(COFFEE_URL, "https://buymeacoffee.com/vallentes");
         assert_eq!(REVOLUT_URL, "https://revolut.me/vallentes");
+    }
+}
+
+/// Lets overlay and widget pages write to the app log (errors there are otherwise invisible).
+#[tauri::command]
+pub async fn frontend_log(window: WebviewWindow, level: String, message: String) {
+    let msg: String = message.chars().take(2000).collect();
+    match level.as_str() {
+        "error" => log::error!("[{}] {msg}", window.label()),
+        "warn" => log::warn!("[{}] {msg}", window.label()),
+        _ => log::info!("[{}] {msg}", window.label()),
     }
 }

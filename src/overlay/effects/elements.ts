@@ -71,7 +71,7 @@ function waterJet(s: Stage, tx: number, ty: number, dt: number) {
     const jy = ty + s.rng.range(-10, 10);
     const t = FLIGHT * s.rng.range(0.9, 1.1);
     const v = aim(ox, oy, jx, jy, t, g);
-    s.spawn({ kind: Kind.Water, x: ox, y: oy, vx: v.vx, vy: v.vy, life: t, size: s.rng.range(5, 9), color: 0xbfe6ff, color1: 0x4aa8ff, alpha: 0.85, alpha1: 0.6, gravity: g });
+    s.spawn({ kind: Kind.Water, x: ox, y: oy, vx: v.vx, vy: v.vy, life: t, size: s.rng.range(9, 15), color: 0x9fd8ff, color1: 0x1f78ff, alpha: 0.95, alpha1: 0.75, gravity: g });
   }
   // Splash where it lands.
   for (let i = 0; i < s.many(Math.ceil(90 * dt)); i++) {
@@ -199,7 +199,7 @@ class Storm implements Entity {
     const n = s.many(Math.round(rate * dt * ramp + (s.rng.chance((rate * dt * ramp) % 1) ? 1 : 0)));
     for (let i = 0; i < n; i++) {
       const size = s.rng.range(3, 10);
-      s.spawn({ kind: Kind.Snow, x: s.rng.range(-s.w * 0.2, s.w * 1.2), y: -10, vx: wind * 90 + s.rng.range(-15, 15), vy: 30 + size * 9, life: 60, size, color: 0xffffff, alpha: 0.95, alpha1: 0.95, rot: s.rng.range(0, 6), spin: s.rng.range(-1.5, 1.5) });
+      s.spawn({ kind: Kind.Snow, x: s.rng.range(-s.w * 0.2, s.w * 1.2), y: -10, vx: wind * 90 + s.rng.range(-15, 15), vy: 60 + size * 14, life: 60, size, color: 0xffffff, alpha: 0.95, alpha1: 0.95, rot: s.rng.range(0, 6), spin: s.rng.range(-1.5, 1.5) });
     }
     // Sway, and settle on the pile.
     const P = s.particles;

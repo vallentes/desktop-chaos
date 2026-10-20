@@ -69,3 +69,23 @@ describe('arsenal', () => {
     for (const f of files) expect(fs.readFileSync(f, 'utf8').includes('—'), f).toBe(false);
   });
 });
+
+describe('regressions found on a real desktop', () => {
+  it('an empty tool-options blob from Rust gives working defaults (no NaN crack radius)', async () => {
+    const { DEFAULT_TOOL_OPTIONS } = await import('../shared/effects');
+    expect(normalizeToolOptions({})).toEqual(DEFAULT_TOOL_OPTIONS);
+    expect(normalizeToolOptions(null)).toEqual(DEFAULT_TOOL_OPTIONS);
+  });
+
+  it('the overlay imports the CSP-safe Pixi build (the app forbids eval)', async () => {
+    const fs = await import('node:fs');
+    expect(fs.readFileSync('src/overlay/main.ts', 'utf8')).toContain("import 'pixi.js/unsafe-eval'");
+    const conf = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+    expect(conf.app.security.csp).not.toContain("'unsafe-eval'");
+  });
+
+  it('hidden HUD elements stay hidden even when their CSS sets display', async () => {
+    const fs = await import('node:fs');
+    expect(fs.readFileSync('src/overlay/overlay.css', 'utf8')).toMatch(/\[hidden\]\s*\{\s*display: none !important;/);
+  });
+});

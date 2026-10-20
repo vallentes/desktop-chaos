@@ -68,7 +68,22 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayHandles> {
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| {
-            let id = event.id().as_ref();
+            // Handled off the main thread: these create and talk to windows, which wait on it.
+            let id = event.id().as_ref().to_string();
+            let app = app.clone();
+            tauri::async_runtime::spawn(async move { on_menu(&app, &id) });
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
+                show_main(tray.app_handle(), None);
+            }
+        })
+        .build(app)?;
+
+    Ok(TrayHandles { stop, arm, widgets: widgets_item, update })
+}
+
+fn on_menu(app: &AppHandle, id: &str) {
             match id {
                 "open" => show_main(app, None),
                 "arm" => control::toggle_arm(app),
@@ -80,10 +95,10 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayHandles> {
                     widgets::sync(app);
                 }
                 "coffee" => {
-                    let _ = commands::open_support_link(app.clone(), Some("coffee".into()));
+                    let _ = commands::open_link(app, Some("coffee"));
                 }
                 "revolut" => {
-                    let _ = commands::open_support_link(app.clone(), Some("revolut".into()));
+                    let _ = commands::open_link(app, Some("revolut"));
                 }
                 "update" => {
                     let has = state(app).update.lock().unwrap().is_some();
@@ -115,15 +130,6 @@ pub fn build(app: &AppHandle) -> tauri::Result<TrayHandles> {
                     }
                 }
             }
-        })
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                show_main(tray.app_handle(), None);
-            }
-        })
-        .build(app)?;
-
-    Ok(TrayHandles { stop, arm, widgets: widgets_item, update })
 }
 
 pub fn refresh(app: &AppHandle) {

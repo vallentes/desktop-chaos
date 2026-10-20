@@ -106,7 +106,7 @@ body {
   left: 50%;
   top: 40%;
   transform: translate(-50%, -50%);
-  font: 700 160px Rajdhani, 'Segoe UI', sans-serif;
+  font: 700 clamp(140px, 24vh, 360px) Rajdhani, 'Segoe UI', sans-serif;
   color: #fff;
   text-shadow:
     0 0 18px #ff4a1a,
@@ -137,4 +137,8 @@ body {
 body.obs .hud,
 body.obs .hint {
   display: none;
+}
+
+[hidden] {
+  display: none !important;
 }
